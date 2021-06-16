@@ -8,16 +8,16 @@ import (
 
 func main() {
 
-	config := gomysql.NewMySQLConfig("localhost", 3306, "root", "root", "gomysql")
-	poolSize := 100
+	errorConfig := gomysql.ErrorLogConfig{ErrorApiurl: "https://senthilnasa.me/api/mysqlgo/error_log/", ErrorFromFeild: "error", IsPostRequest: true}
 
-	pool, err := gomysql.NewMySQLConnectionPool(poolSize, config)
+	config := gomysql.MySQLConfig{Host: "localhost", Port: 3306, User: "root", Pass: "nasa", DbName: "gomysql", Sizeofpool: 100, ErrorLog: errorConfig}
+	pool, err := gomysql.NewMySQLConnectionPool(config)
 	if err != nil {
-		fmt.Println(err)
-		return
+		panic(err)
 	}
 	defer pool.CloseAll()
 	connection := pool.Get()
+
 	// Select  Query
 	data, err := connection.Read("SELECT * FROM student")
 	if err != nil {

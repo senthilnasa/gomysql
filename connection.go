@@ -3,23 +3,17 @@ package gomysql
 import (
 	"database/sql"
 	"fmt"
-	"sync"
+	"hash/fnv"
+	"strconv"
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/xlab/closer"
 )
 
-type MySQLConfig struct {
-	Host   string
-	Port   int
-	User   string
-	Pass   string
-	DbName string
-}
-
-func NewMySQLConfig(host string, port int, user string, password string, dataBase string) *MySQLConfig {
-	return &MySQLConfig{host, port, user, password, dataBase}
+func newMySQLConfig(param MySQLConfig) *MySQLConfig {
+	// fmt.Println(fmt)
+	return &MySQLConfig{param.Host, param.Port, param.User, param.Pass, param.DbName, param.Sizeofpool, param.ErrorLog}
 }
 
 type MySQLConnection struct {
@@ -28,25 +22,11 @@ type MySQLConnection struct {
 	dataBase *sql.DB
 }
 
-func GetMySQLConnection(host string, port int, user string, password string, dataBase string) MySQLConnection {
-	conf := NewMySQLConfig(host, port, user, password, dataBase)
-	conn, err := CreateMySQLConnection(conf)
-	if err != nil {
-		panic(err.Error())
-	}
-	return conn
-}
-
-func NewMySQLConnection(host string, port int, user string, password string, dataBase string) (MySQLConnection, error) {
-	conf := NewMySQLConfig(host, port, user, password, dataBase)
-	return CreateMySQLConnection(conf)
-}
-
 func CreateMySQLConnection(config *MySQLConfig) (MySQLConnection, error) {
-	db := MySQLConnection{Config: config, hash: GenerateHash()}
+	db := MySQLConnection{Config: config, hash: generateHash()}
 	err := db.connect()
 	if err != nil {
-		fmt.Println(err)
+		// fmt.Println(err)
 		return db, err
 	}
 	closer.Bind(db.Close)
@@ -82,27 +62,19 @@ func (db *MySQLConnection) Close() {
 	_ = db.dataBase.Close()
 }
 
-///////////////// MySQLConnectionPool ////////////////////
-type MySQLConnectionPool struct {
-	sync.Mutex
-	blocked     map[uint32]bool
-	connections []MySQLConnection
-}
-
-func NewMySQLConnectionPool(size int, config *MySQLConfig) (*MySQLConnectionPool, error) {
-
-	pool := &MySQLConnectionPool{connections: make([]MySQLConnection, size), blocked: make(map[uint32]bool)}
-	for i := 0; i < size; i++ {
+func NewMySQLConnectionPool(param MySQLConfig) (*MySQLConnectionPool, error) {
+	config := newMySQLConfig(param)
+	pool := &MySQLConnectionPool{connections: make([]MySQLConnection, param.Sizeofpool), blocked: make(map[uint32]bool)}
+	for i := 0; i < param.Sizeofpool; i++ {
 		connection, err := CreateMySQLConnection(config)
 		if err == nil {
 			pool.connections[i] = connection
 			pool.blocked[connection.hash] = false
 		} else {
+			connection.queryLog("Database Connection Error =>" + err.Error())
 			return nil, err
 		}
 	}
-
-	fmt.Println("Pool Created")
 	return pool, nil
 }
 
@@ -118,31 +90,15 @@ func (pool *MySQLConnectionPool) Get() *MySQLConnection {
 			return &con
 		}
 	}
-
+	// Wait for 0.5 Second and check for avaliable Connection
 	time.Sleep(500 * time.Millisecond)
 	return pool.Get()
 }
 
 func (pool *MySQLConnectionPool) Release(connection *MySQLConnection) {
-	fmt.Println("Release Mysql Connection !")
 	pool.Lock()
 	defer pool.Unlock()
-
 	pool.blocked[connection.hash] = false
-}
-
-func (pool *MySQLConnectionPool) Size() int {
-
-	pool.Lock()
-	defer pool.Unlock()
-
-	size := 0
-	for _, blocked := range pool.blocked {
-		if !blocked {
-			size++
-		}
-	}
-	return size
 }
 
 func (pool *MySQLConnectionPool) CloseAll() {
@@ -150,5 +106,12 @@ func (pool *MySQLConnectionPool) CloseAll() {
 		pool.blocked[c.hash] = true
 		c.Close()
 	}
-	fmt.Println("Connections Mysql Pool")
+	fmt.Println("Closing all Mysql Pool")
+}
+
+// Generate hash value for all connections
+func generateHash() uint32 {
+	hash := fnv.New32a()
+	hash.Write([]byte(strconv.FormatInt(time.Now().UnixNano(), 10)))
+	return hash.Sum32()
 }

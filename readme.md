@@ -29,7 +29,12 @@ import (
 
 func main() {
 
-	config := gomysql.NewMySQLConfig("localhost", 3306, "root", "root", "gomysql")
+	config := gomysql.MySQLConfig{Host: "Host Name", Port: 3306, User: "User Name", Pass: "Db Password", DbName: "DB Name Optinal Fild", Sizeofpool: 100}
+	pool, err := gomysql.NewMySQLConnectionPool(config)
+	if err != nil {
+		panic(err)
+	}
+	defer pool.CloseAll()
 	poolSize := 100
 
 	pool, err := gomysql.NewMySQLConnectionPool(poolSize, config)

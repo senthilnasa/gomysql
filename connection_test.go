@@ -1,25 +1,25 @@
-package gomysql
+package gomysql_test
 
 import (
 	"fmt"
 	"testing"
+
+	"github.com/senthilnasa/gomysql"
 )
 
 func TestNewMySQLConnectionPool(t *testing.T) {
-
-	config := NewMySQLConfig("localhost", 3306, "root", "root", "gomysql")
-	poolSize := 100
-
-	pool, err := NewMySQLConnectionPool(poolSize, config)
+	errorConfig := gomysql.ErrorLogConfig{ErrorApiurl: "", IsPostRequest: true, ErrorFromFeild: "errData"}
+	connectionConfig := gomysql.MySQLConfig{Host: "localhost", Port: 3306, User: "root", Pass: "nasa", DbName: "mysql", Sizeofpool: 100, ErrorLog: errorConfig}
+	pool, err := gomysql.NewMySQLConnectionPool(connectionConfig)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 	defer pool.CloseAll()
 	fmt.Println("Open New Connection")
-	connection1 := pool.Get()
+	connection := pool.Get()
 	fmt.Println("Close  Connection")
 
-	pool.Release(connection1)
+	pool.Release(connection)
 
 }

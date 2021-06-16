@@ -7,20 +7,20 @@ func (db *MySQLConnection) Sread(query string, params ...interface{}) ([]map[str
 	db.checkConnection()
 	stmt, err := db.dataBase.Prepare(query)
 	if err != nil {
-		// queryLog("Create Statement  \n Query => "+query+" \n Error => "+ err.Error())
+		db.queryLog("Create Statement  \n Query => " + query + " \n Error => " + err.Error())
 		return nil, err
 	}
 	defer stmt.Close()
 
 	rows, err := stmt.Query(params...)
 	if err != nil {
-		// queryLog("Pass Parameters to Statement  \n Query => "+query+" \n Error => "+ err.Error())
+		db.queryLog("Pass Parameters to Statement  \n Query => " + query + " \n Error => " + err.Error())
 		return nil, err
 	}
 
 	columns, err := rows.Columns()
 	if err != nil {
-		// queryLog("Pass Parameters to Statement  \n Query => "+query+" \n Error => "+ err.Error())
+		db.queryLog("Pass Parameters to Statement  \n Query => " + query + " \n Error => " + err.Error())
 		return nil, err
 	}
 	count := len(columns)
@@ -62,14 +62,14 @@ func (db *MySQLConnection) Read(query string, params ...interface{}) ([]map[stri
 	}
 	stmt, err := db.dataBase.Prepare(query)
 	if err != nil {
-		// queryLog("Create Statement  \n Query => "+query+" \n Error => "+ err.Error())
+		db.queryLog("Create Statement  \n Query => " + query + " \n Error => " + err.Error())
 		return nil, err
 	}
 	defer stmt.Close()
 
 	rows, err := stmt.Query(paramPointers...)
 	if err != nil {
-		// queryLog("Pass Parameters to Statement  \n Query => "+query+" \n Error => "+ err.Error())
+		db.queryLog("Pass Parameters to Statement  \n Query => " + query + " \n Error => " + err.Error())
 		return nil, err
 	}
 
@@ -112,19 +112,19 @@ func (db *MySQLConnection) Insert(query string, params ...interface{}) (bool, er
 	db.checkConnection()
 	stmt, err := db.dataBase.Prepare(query)
 	if err != nil {
-		// queryLog("Create Statement  \n Query => "+query+" \n Error => "+ err.Error())
+		db.queryLog("Create Statement  \n Query => " + query + " \n Error => " + err.Error())
 		return false, err
 	}
 	defer stmt.Close()
 
 	res, err := stmt.Exec(params...)
 	if err != nil {
-		// queryLog("Execute Statement  \n Query => "+query+" \n Error => "+ err.Error())
+		db.queryLog("Execute Statement  \n Query => " + query + " \n Error => " + err.Error())
 		return false, err
 	}
 	a, err := res.RowsAffected()
 	if err != nil {
-		// queryLog("RowsAffected Statement  \n Query => "+query+" \n Error => "+ err.Error())
+		db.queryLog("RowsAffected Statement  \n Query => " + query + " \n Error => " + err.Error())
 		return false, err
 	}
 	if a > 0 {
@@ -138,19 +138,19 @@ func (db *MySQLConnection) InsertAndGetAutoGenId(query string, params ...interfa
 	db.checkConnection()
 	stmt, err := db.dataBase.Prepare(query)
 	if err != nil {
-		// queryLog("Create Statement  \n Query => "+query+" \n Error => "+ err.Error())
+		db.queryLog("Create Statement  \n Query => " + query + " \n Error => " + err.Error())
 		return -1, err
 	}
 	defer stmt.Close()
 	res, err := stmt.Exec(params...)
 	if err != nil {
-		// queryLog("Execute Statement  \n Query => "+query+" \n Error => "+ err.Error())
+		db.queryLog("Execute Statement  \n Query => " + query + " \n Error => " + err.Error())
 		return -1, err
 	}
 
 	result, err := res.LastInsertId()
 	if err != nil {
-		// queryLog("LastInsertId Statement  \n Query => "+query+" \n Error => "+ err.Error())
+		db.queryLog("LastInsertId Statement  \n Query => " + query + " \n Error => " + err.Error())
 		return -1, err
 	}
 	return result, nil
@@ -161,19 +161,19 @@ func (db *MySQLConnection) Update(query string, params ...interface{}) (bool, er
 	db.checkConnection()
 	stmt, err := db.dataBase.Prepare(query)
 	if err != nil {
-		// queryLog("Create Statement  \n Query => "+query+" \n Error => "+ err.Error())
+		db.queryLog("Create Statement  \n Query => " + query + " \n Error => " + err.Error())
 		return false, err
 	}
 	defer stmt.Close()
 
 	res, err := stmt.Exec(params...)
 	if err != nil {
-		// queryLog("Execute Statement  \n Query => "+query+" \n Error => "+ err.Error())
+		db.queryLog("Execute Statement  \n Query => " + query + " \n Error => " + err.Error())
 		return false, err
 	}
 	a, err := res.RowsAffected()
 	if err != nil {
-		// queryLog("RowsAffected Statement  \n Query => "+query+" \n Error => "+ err.Error())
+		db.queryLog("RowsAffected Statement  \n Query => " + query + " \n Error => " + err.Error())
 		return false, err
 	}
 	if a > 0 {
@@ -187,19 +187,19 @@ func (db *MySQLConnection) Delete(query string, params ...interface{}) (bool, er
 	db.checkConnection()
 	stmt, err := db.dataBase.Prepare(query)
 	if err != nil {
-		// queryLog("Create Statement  \n Query => "+query+" \n Error => "+ err.Error())
+		db.queryLog("Create Statement  \n Query => " + query + " \n Error => " + err.Error())
 		return false, err
 	}
 	defer stmt.Close()
 
 	res, err := stmt.Exec(params...)
 	if err != nil {
-		// queryLog("Execute Statement  \n Query => "+query+" \n Error => "+ err.Error())
+		db.queryLog("Execute Statement  \n Query => " + query + " \n Error => " + err.Error())
 		return false, err
 	}
 	a, err := res.RowsAffected()
 	if err != nil {
-		// queryLog("RowsAffected Statement  \n Query => "+query+" \n Error => "+ err.Error())
+		db.queryLog("RowsAffected Statement  \n Query => " + query + " \n Error => " + err.Error())
 		return false, err
 	}
 	if a > 0 {
