@@ -1,13 +1,14 @@
 # GoMysql
 
 
-A Go Mysql Server Pool with Bind Parameter
+A Go Mysql Server Pool with Bind Parameter using Hash table Mechanism. 
 
 ## Benefits:
 
- * Auto Close of Connections
  * Connection Pool
+ * Auto Close of Connections
  * Bind Parameters to prevent Mysql Injection
+ * Error Log to Increse performabe of Apllication
 
 
 ## Installation
@@ -28,8 +29,21 @@ import (
 )
 
 func main() {
+	// Error Log Config
+	errorConfig := gomysql.ErrorLogConfig{ErrorApiurl: "Error Log Api", ErrorFromFeild: "Feild to Send Error Log", IsPostRequest: true}
+			// Example
+			// errorConfig := gomysql.ErrorLogConfig{ErrorApiurl: "", IsPostRequest: true, ErrorFromFeild: "errData"}
+	
+	
+	
+	
+	// Mysql Connection Config
+	config := gomysql.MySQLConfig{Host: "Host Name", Port: Port Number, User: "User Name", Pass: "Db Password", DbName: "DB Name Optinal Fild", Sizeofpool:Number Connection To be Oppened
+	, ErrorLog: errorConfig}
 
-	config := gomysql.MySQLConfig{Host: "Host Name", Port: 3306, User: "User Name", Pass: "Db Password", DbName: "DB Name Optinal Fild", Sizeofpool: 100}
+			// Example
+			// connectionConfig := gomysql.MySQLConfig{Host: "localhost", Port: 3306, User: "root", Pass: "nasa", DbName: "mysql", Sizeofpool: 100, ErrorLog: errorConfig}
+
 	pool, err := gomysql.NewMySQLConnectionPool(config)
 	if err != nil {
 		panic(err)
